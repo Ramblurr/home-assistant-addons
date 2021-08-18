@@ -33,5 +33,5 @@
     "borg_backup_keep_snapshots": "int",,
     "borg_healtchecks_url": "str"
   },
-  "image": "ramblurr/{arch}-borg-backup"
+  "image": "ghcr.io/ramblurr/{arch}-borg-backup"
 }

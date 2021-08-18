@@ -1,0 +1,40 @@
+---
+name: 'Build and test borg_backup'
+
+env:
+  ADD_ON_DIRECTORY: borg_backup
+
+on:
+  push:
+    paths:
+      - 'borg_backup/**'
+    branches:
+      - main
+  pull_request:
+    paths:
+      - 'borg_backup/**'
+
+jobs:
+  build:
+    name: Test build borg_backup
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v2
+
+      - name: Log in to the Container registry
+        uses: docker/login-action@f054a8b539a109f9f41c372932f1ae047eff08c9
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Test build
+        uses: home-assistant/builder@master
+        with:
+          args: |
+            --test \
+            --all \
+            --target /data/${ADD_ON_DIRECTORY} \
+            --docker-hub  ghcr.io \
+            --image ${ADD_ON_DIRECTORY}-add-on
