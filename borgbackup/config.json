@@ -16,7 +16,7 @@
   "options": {
     "borg_backup_keep_snapshots": "5",
     "borg_compression": "",
-    "borg_healtchecks_url": "",
+    "borg_healthchecks_url": "",
     "borg_host": "",
     "borg_passphrase": "",
     "borg_repo_url": "",
@@ -27,7 +27,7 @@
   "schema": {
     "borg_backup_keep_snapshots": "int",
     "borg_compression": "str",
-    "borg_healtchecks_url": "str",
+    "borg_healthchecks_url": "str",
     "borg_host": "str",
     "borg_passphrase": "str",
     "borg_repo_url": "str",
@@ -38,5 +38,5 @@
   "slug": "borgbackup",
   "startup": "services",
   "url": "https://github.com/Ramblurr/home-assistant-addons",
-  "version": "1.2"
+  "version": "1.2.1"
 }
