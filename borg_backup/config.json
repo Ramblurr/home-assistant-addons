@@ -1,7 +1,6 @@
 {
   "arch": [
-    "amd64",
-    "i386"
+    "amd64"
   ],
   "boot": "manual",
   "description": "Borgbackup!",
