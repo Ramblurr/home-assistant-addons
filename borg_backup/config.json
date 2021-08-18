@@ -1,37 +1,43 @@
 {
-  "name": "Borgbackup for homeassistant",
-  "version": "1.2",
-  "slug": "borg_backup",
-  "description": "Borgbackup!",
-  "url": "https://github.com/Ramblurr/home-assistant-addons",
-  "arch": ["amd64", "i386"],
-  "startup": "before",
+  "arch": [
+    "amd64",
+    "i386"
+  ],
   "boot": "manual",
-  "hassio_role": "backup",
+  "description": "Borgbackup!",
   "hassio_api": "true",
+  "hassio_role": "backup",
   "homeassistant_api": "true",
-  "map": [ "config:rw", "backup:rw" ],
+  "image": "ghcr.io/ramblurr/{arch}-borg-backup",
+  "map": [
+    "config:rw",
+    "backup:rw"
+  ],
+  "name": "Borgbackup for homeassistant",
   "options": {
-    "borg_user": "",
-    "borg_repo_url": "",
-    "borg_host": "",
-    "borg_ssh_params": "",
-    "borg_passphrase": "",
-    "borg_reponame": "",
-    "borg_compression": "",
     "borg_backup_keep_snapshots": "5",
-    "borg_healtchecks_url": ""
+    "borg_compression": "",
+    "borg_healtchecks_url": "",
+    "borg_host": "",
+    "borg_passphrase": "",
+    "borg_repo_url": "",
+    "borg_reponame": "",
+    "borg_ssh_params": "",
+    "borg_user": ""
   },
   "schema": {
-    "borg_user": "str",
-    "borg_repo_url": "str",
-    "borg_host": "str",
-    "borg_ssh_params": "str",
-    "borg_passphrase": "str",
-    "borg_reponame": "str",
+    "borg_backup_keep_snapshots": "int",
     "borg_compression": "str",
-    "borg_backup_keep_snapshots": "int",,
-    "borg_healtchecks_url": "str"
+    "borg_healtchecks_url": "str",
+    "borg_host": "str",
+    "borg_passphrase": "str",
+    "borg_repo_url": "str",
+    "borg_reponame": "str",
+    "borg_ssh_params": "str",
+    "borg_user": "str"
   },
-  "image": "ghcr.io/ramblurr/{arch}-borg-backup"
+  "slug": "borg_backup",
+  "startup": "before",
+  "url": "https://github.com/Ramblurr/home-assistant-addons",
+  "version": "1.2"
 }
