@@ -10,13 +10,13 @@ on:
       - 'borgbackup/**'
     branches:
       - main
-  pull_request:
-    paths:
-      - 'borgbackup/**'
+#  pull_request:
+#    paths:
+#      - 'borgbackup/**'
 
 jobs:
   build:
-    name: Test build borgbackup
+    name: Build borgbackup
     runs-on: ubuntu-latest
     steps:
       - name: Checkout the repository
@@ -29,11 +29,10 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Test build
+      - name: Publish build
         uses: home-assistant/builder@master
         with:
           args: |
-            --test \
             --amd64 \
             --target /data/${ADD_ON_DIRECTORY} \
             --image ghcr.io/ramblurr/${ADD_ON_DIRECTORY}-add-on
