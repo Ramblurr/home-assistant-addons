@@ -34,7 +34,6 @@ jobs:
         with:
           args: |
             --test \
-            --all \
+            --amd64 \
             --target /data/${ADD_ON_DIRECTORY} \
-            --docker-hub ghcr.io \
-            --image ramblurr/${ADD_ON_DIRECTORY}-add-on
+            --image ghcr.io/ramblurr/${ADD_ON_DIRECTORY}-add-on
