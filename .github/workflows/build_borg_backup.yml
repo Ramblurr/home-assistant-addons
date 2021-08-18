@@ -1,22 +1,22 @@
 ---
-name: 'Build and test borg_backup'
+name: 'Build and test borgbackup'
 
 env:
-  ADD_ON_DIRECTORY: borg_backup
+  ADD_ON_DIRECTORY: borgbackup
 
 on:
   push:
     paths:
-      - 'borg_backup/**'
+      - 'borgbackup/**'
     branches:
       - main
   pull_request:
     paths:
-      - 'borg_backup/**'
+      - 'borgbackup/**'
 
 jobs:
   build:
-    name: Test build borg_backup
+    name: Test build borgbackup
     runs-on: ubuntu-latest
     steps:
       - name: Checkout the repository
@@ -36,5 +36,5 @@ jobs:
             --test \
             --all \
             --target /data/${ADD_ON_DIRECTORY} \
-            --docker-hub  ghcr.io \
-            --image ${ADD_ON_DIRECTORY}-add-on
+            --docker-hub ghcr.io \
+            --image ramblurr/${ADD_ON_DIRECTORY}-add-on

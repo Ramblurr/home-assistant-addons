@@ -35,7 +35,7 @@
     "borg_ssh_params": "str",
     "borg_user": "str"
   },
-  "slug": "borg_backup",
+  "slug": "borgbackup",
   "startup": "before",
   "url": "https://github.com/Ramblurr/home-assistant-addons",
   "version": "1.2"
