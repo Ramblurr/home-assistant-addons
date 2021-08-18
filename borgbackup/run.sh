@@ -1,4 +1,5 @@
 #!/usr/bin/env bashio
+# shellcheck disable=SC2155
 set +u
 
 export BORG_BASE_DIR=/config/borg
@@ -21,10 +22,10 @@ export borg_error=0
 
 export BORG_RSH="ssh -o UserKnownHostsFile=${_BORG_SSH_KNOWN_HOSTS} -i ${_BORG_SSH_KEY} $(bashio::config 'borg_ssh_params')"
 
-mkdir -p $(dirname ${_BORG_SSH_KEY}) ${BORG_CACHE_DIR}
+mkdir -p "$(dirname ${_BORG_SSH_KEY})" ${BORG_CACHE_DIR}
 
 if [ ${#_BORG_HC_URL} -ne 0 ];then
-  curl -fsS --retry 5 -o /dev/null $BORG_HC_URL/start
+  curl -fsS --retry 5 -o /dev/null "$_BORG_HC_URL/start"
 fi
 
 if [ ${#BORG_PASSPHRASE} -eq 0 ];then
@@ -36,7 +37,7 @@ if [ ${#_BORG_COMPRESSION} -eq 0 ];then
     _BORG_COMPRESSION="zstd"
 fi
 
-if [ ${#BORG_BACKUP_DEBUG} -ne 0 ];then
+if [ ${#_BORG_BACKUP_DEBUG} -ne 0 ];then
     _BORG_DEBUG="--debug"
 fi
 
@@ -44,11 +45,11 @@ function sanity_checks {
     if [[ ( ${#_BORG_REPO_URL} -eq 0 ) && ( ${#_BORG_HOST} -eq 0 )]];then
         bashio::log.error "both 'borg_repo_url' 'borg_host' undefined"
         bashio::log.error "please define one of them"
-        borg_error=$(($borg_error + 1))
+        borg_error=$((borg_error + 1))
     elif [[ ( ${#_BORG_REPO_URL} -gt 0 ) && ( ${#_BORG_HOST} -gt 0 )]];then
         bashio::log.error "'borg_repo_url' and 'borg_host' are definded"
         bashio::log.error "please define only one of them"
-        borg_error=$(($borg_error + 1))
+        borg_error=$((borg_error + 1))
     else
         bashio::log.info "sanity preserved"
     fi
@@ -72,12 +73,13 @@ function set_borg_repo_path {
     return
 }
 
+# shellcheck disable=SC2120
 function add_borg_host_to_known_hosts {
     bashio::log.info "in add_borg_host_to_known_hosts"
     if ! bashio::fs.file_exists ${_BORG_SSH_KNOWN_HOSTS}; then
         if [[ ( ${#_BORG_USER} -gt 0 ) ]];then
             bashio::log.info "Adding host $1 into ${_BORG_SSH_KNOWN_HOSTS}"
-            ssh-keyscan ${_BORG_HOST} >> ${_BORG_SSH_KNOWN_HOSTS}
+            ssh-keyscan "${_BORG_HOST}" >> ${_BORG_SSH_KNOWN_HOSTS}
         else
             bashio::log.info "Local path ignoring ssh and unseting BORG_RSH"
             unset BORG_RSH
@@ -113,29 +115,30 @@ function init_borg_repo {
 function borg_create_backup {
     export BACKUP_TIME=$(date  +'%Y-%m-%d-%H:%M')
     bashio::log.info "Creating snapshot"
-    ha snapshots new --name borg-${BACKUP_TIME} --raw-json --no-progress |tee /tmp/borg_backup_$$
+    ha snapshots new --name borg-"${BACKUP_TIME}" --raw-json --no-progress |tee /tmp/borg_backup_$$
     bashio::log.info "Snapshot done"
     export SNAP_RES=$(jq < /tmp/borg_backup_$$ .result -r)
     # if it is not ok something failed and should be logged anyway
-    if [ $SNAP_RES != 'ok' ];then
+    if [ "$SNAP_RES" != 'ok' ];then
         bashio::log.error "Failed creating ha snapshot"
         if [ ${#_BORG_HC_URL} -ne 0 ];then
-          curl -fsS --retry 5 -o /dev/null $BORG_HC_URL/fail
+          curl -fsS --retry 5 -o /dev/null "$_BORG_HC_URL/fail"
         fi
-        exit -1
+        exit 1
     fi
     export SNAP_SLUG=$(jq < /tmp/borg_backup_$$ -r .data.slug)
-    mkdir -p ${_BORG_TOBACKUP}/${SNAP_SLUG}
-    tar -C ${_BORG_TOBACKUP}/${SNAP_SLUG} -xf /backup/${SNAP_SLUG}.tar
-    for targz in ${_BORG_TOBACKUP}/${SNAP_SLUG}/*.tar.gz ; do
-                TGZDIR=$(echo ${targz}|sed -e 's/.tar.gz//g')
-                mkdir -p ${TGZDIR}
-                tar -C ${TGZDIR} -zxf  $targz
-                rm -f $targz # remove compressed file
+    mkdir -p "${_BORG_TOBACKUP}/${SNAP_SLUG}"
+    tar -C "${_BORG_TOBACKUP}/${SNAP_SLUG}" -xf "/backup/${SNAP_SLUG}.tar"
+    for targz in "${_BORG_TOBACKUP}"/"${SNAP_SLUG}"/*.tar.gz ; do
+      # shellcheck disable=SC2001
+      TGZDIR=$(echo "${targz}" | sed -e 's/.tar.gz//g')
+      mkdir -p "${TGZDIR}"
+      tar -C "${TGZDIR}" -zxf "$targz"
+      rm -f "$targz" # remove compressed file
     done
 
     bashio::log.info "Start borg create"
-    borg create ${_BORG_DEBUG} --compression ${_BORG_COMPRESSION} --stats ::"${BACKUP_TIME}" ${_BORG_TOBACKUP}/${SNAP_SLUG}
+    borg create ${_BORG_DEBUG} --compression ${_BORG_COMPRESSION} --stats ::"${BACKUP_TIME}" "${_BORG_TOBACKUP}/${SNAP_SLUG}"
     bashio::log.info "End borg create --stats..."
     # cleanup
     rm -rf  ${_BORG_TOBACKUP} /tmp/borg_backup_$$
@@ -145,12 +148,12 @@ function borg_create_backup {
 function clean_old_snapshots {
     ha snapshots reload
     export ALL_SNAPS=$(ha snapshots --raw-json|jq '.data.snapshots[].name' -r| sort | wc -l)
-    export DISCARD_SNAPS=$(($ALL_SNAPS - $_BORG_BACKUP_KEEP_SNAPSHOTS))
+    export DISCARD_SNAPS=$((ALL_SNAPS - _BORG_BACKUP_KEEP_SNAPSHOTS))
     export ALL_SNAPS=$(ha snapshots --raw-json|jq '.data.snapshots[].name' -r| sort | head -n ${DISCARD_SNAPS})
     for snap in $ALL_SNAPS ; do
-        SLUG=$(ha snapshots --raw-json |jq -r '.data.snapshots[]|select (.name=="'${snap}'")|.slug')
+        SLUG=$(ha snapshots --raw-json |jq -r '.data.snapshots[]|select (.name=="'"${snap}"'")|.slug')
         bashio::log.info "Removing snapshot ${snap} with slug id $SLUG started"
-        ha snapshots remove $SLUG
+        ha snapshots remove "$SLUG"
         bashio::log.info "Removed snapshot ${snap} with slug id $SLUG"
     done
     bashio::log.info "Cleanup of old snapshots done"
@@ -160,9 +163,9 @@ sanity_checks
 if [[ $borg_error -gt 0 ]];then
     bashio::log.warning "error state bailing out..."
     if [ ${#_BORG_HC_URL} -ne 0 ];then
-      curl -fsS --retry 5 -o /dev/null $BORG_HC_URL/fail
+      curl -fsS --retry 5 -o /dev/null "$_BORG_HC_URL/fail"
     fi
-    exit -1
+    exit 1
 fi
 generate_ssh_key
 set_borg_repo_path
@@ -174,5 +177,5 @@ borg_create_backup
 clean_old_snapshots
 
 if [ ${#_BORG_HC_URL} -ne 0 ];then
-  curl -fsS --retry 5 -o /dev/null $BORG_HC_URL
+  curl -fsS --retry 5 -o /dev/null "$_BORG_HC_URL"
 fi
