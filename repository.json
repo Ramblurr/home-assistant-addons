@@ -1,5 +1,5 @@
 {
-    "name": "rmblr's HA Addons",
-    "url": "https://github.com/Ramblurr/home-assistant-addons",
-    "maintainer": "unnamedrambler@gmail.com"
+  "maintainer": "unnamedrambler@gmail.com",
+  "name": "rmblr's HA Addons",
+  "url": "https://github.com/Ramblurr/home-assistant-addons"
 }
