@@ -7,7 +7,7 @@
   "hassio_api": "true",
   "hassio_role": "backup",
   "homeassistant_api": "true",
-  "image": "ghcr.io/ramblurr/{arch}-borg-backup",
+  "image": "ghcr.io/ramblurr/borgbackup-add-on",
   "map": [
     "config:rw",
     "backup:rw"

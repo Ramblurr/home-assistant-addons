@@ -35,4 +35,4 @@ jobs:
           args: |
             --amd64 \
             --target /data/${ADD_ON_DIRECTORY} \
-            --image ghcr.io/ramblurr/${ADD_ON_DIRECTORY}-add-on
+            --image ramblurr/${ADD_ON_DIRECTORY}-add-on
