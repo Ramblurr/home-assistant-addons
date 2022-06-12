@@ -2,12 +2,13 @@
   "arch": [
     "amd64"
   ],
-  "boot": "manual",
-  "description": "Borgbackup!",
-  "hassio_api": "true",
-  "hassio_role": "backup",
-  "homeassistant_api": "true",
+  "boot": "auto",
+  "description": "Create home assistant backups to a remote borg repo",
+  "hassio_api": true,
+  "hassio_role": "manager",
+  "homeassistant_api": true,
   "image": "ghcr.io/ramblurr/borgbackup-add-on",
+  "init": false,
   "map": [
     "config:rw",
     "backup:rw"
@@ -15,28 +16,39 @@
   "name": "Borgbackup for homeassistant",
   "options": {
     "borg_backup_keep_snapshots": "5",
-    "borg_compression": "",
+    "borg_compression": "zstd",
     "borg_healthchecks_url": "",
-    "borg_host": "",
-    "borg_passphrase": "",
-    "borg_repo_url": "",
-    "borg_reponame": "",
+    "borg_passphrase": null,
+    "borg_repo_url": null,
     "borg_ssh_params": "",
-    "borg_user": ""
+    "log_level": "info",
+    "trigger_days": [
+      "Mon",
+      "Tue",
+      "Wed",
+      "Thu",
+      "Fri",
+      "Sat",
+      "Sun"
+    ],
+    "trigger_time": "00:00"
   },
   "schema": {
     "borg_backup_keep_snapshots": "int",
-    "borg_compression": "str",
-    "borg_healthchecks_url": "str",
-    "borg_host": "str",
+    "borg_compression": "list(lz4|zstd|zlib|lzma)?",
+    "borg_healthchecks_url": "str?",
     "borg_passphrase": "str",
     "borg_repo_url": "str",
-    "borg_reponame": "str",
-    "borg_ssh_params": "str",
-    "borg_user": "str"
+    "borg_ssh_params": "str?",
+    "log_level": "list(trace|debug|info|notice|warning|error|fatal)?",
+    "trigger_days": [
+      "match(Mon|Tue|Wed|Thu|Fri|Sat|Sun)"
+    ],
+    "trigger_time": "match(^(manual|([0-1][0-9]|2[0-3]):[0-5][0-9])$)"
   },
   "slug": "borgbackup",
-  "startup": "services",
+  "startup": "application",
+  "stdin": true,
   "url": "https://github.com/Ramblurr/home-assistant-addons",
-  "version": "1.2.1"
+  "version": "1.2.30"
 }

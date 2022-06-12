@@ -1,12 +1,26 @@
-# borg based backup for home assistant
+# borgbackup for home assistant
 
-This is based on work  [by
-bmanojlovic](https://github.com/bmanojlovic/home-assistant-borg-backup) and is
-licensed under the [Apache
-2.0](https://github.com/bmanojlovic/home-assistant-addons/blob/master/LICENSE)
-license.
+## ⚠️ Do Not Use
+
+This addon has a fatal flaw: it attempts to extract the entire HA backup
+tarballs inside HA supervisor in order to run `borg create` on the extract
+files.
+
+This will break your HA install if you have > 50% of your hard disk used.
+
+I suggest using [Thomas Mauerer's
+samba-backup](https://github.com/thomasmauerer/hassio-addons/tree/master/samba-backup)
+instead.
+
+A proper borg solution would not rely on HA's built in snaphots (but that has
+its own disadvantages)
 
 ## About
+
+This addon is based on:
+
+* [Thomas Mauerer's samba-backup](https://github.com/thomasmauerer/hassio-addons/tree/master/samba-backup)
+* and [bmanojlovic's borg-backup addon](https://github.com/bmanojlovic/home-assistant-borg-backup)
 
 Home assistant is very nice system, but every system can crash or disks it
 resides on can stop spinning eventually, so we need to keep configuration and
@@ -16,43 +30,29 @@ website
 
 Few things this addon provides to you are:
 
-- automation of backups
-- compression of backups
-- deduplication of backups
+* automation of backups
+* compression of backups
+* deduplication of backups
 
-first part is done by home assistant but last two are benefits that
+The first is done by home assistant but last two are benefits that
 [borgbackup](https://www.borgbackup.org/) provides.
 
 ## Install
 
-1) Add `https://github.com/bmanojlovic/home-assistant-addons` into supervisor
+1) Add `https://github.com/ramblurr/home-assistant-addons` into supervisor
    addons-store
 2) Install Borg-Backup addon
-3) configure system and addon for backups
+3) Configure the system and addon for backups
 
 ## Configuration
 
-there are two ways to configure borg repository path, using borg repository
-uri, or using "manual" way of setting it up using **borg_hostname**
-**borg_user** and **borg_reponame** parameters.  it could look to something
-like
+To configure the addon you must provide the following **required** configuration
+values:
 
 ```yaml
-borg_hostname: host
-borg_user: user
-borg_reponame: path/to/repo
+borg_repo_url: user@host:path/to/rep
+borg_passphrase: a-long-random-passphrase
 ```
-
-or
-
-set **borg_repo_url** to something like
-
-```yaml
-borg_repo_url: user@host:path/to/repo
-```
-
-Please be aware that you are supposed to use only one way of doing it, as if
-both are used addon will exit with error.
 
 When first run addon will provide in its logs information of ssh key that you
 should set on borg backup server. Example key how it should look like is shown
@@ -64,6 +64,9 @@ bellow.
 ssh-rsa AAAAB3N... root@local-borg-backup
 [00:01:07] INFO: ************ SNIP **********************
 ```
+
+Alternatively you can create the `borg/keys/borg_backup{,.pub}` files yourself,
+don't forget to `chmod 0600` them.
 
 ## Automation
 

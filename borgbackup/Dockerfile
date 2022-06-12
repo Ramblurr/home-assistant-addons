@@ -17,8 +17,4 @@ RUN curl -Lso /usr/bin/ha \
         "https://github.com/home-assistant/cli/releases/download/${CLI_VERSION}/ha_${BUILD_ARCH}" \
     && chmod a+x /usr/bin/ha
 
-# Copy required data for add-on
-COPY run.sh /
-RUN chmod a+x /run.sh
-
-CMD [ "/run.sh" ]
+COPY rootfs /

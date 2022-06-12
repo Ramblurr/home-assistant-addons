@@ -1,0 +1,96 @@
+#!/usr/bin/with-contenv bashio
+# shellcheck disable=SC2155
+# shellcheck disable=SC1091
+set +u
+
+source /etc/services.d/borgbackup/config.sh
+source /etc/services.d/borgbackup/healthchecks.sh
+source /etc/services.d/borgbackup/borg.sh
+
+function init_borg {
+    set -e
+
+    mkdir -p "$(dirname ${_BORG_SSH_KEY})" ${BORG_CACHE_DIR}
+    generate_ssh_key && \
+    add_borg_host_to_known_hosts && \
+    init_borg_repo && \
+    show_ssh_key && return 0 || return 1
+
+}
+
+function run_backup {
+    {
+        # synchronize the backup routine
+        flock -n -x 200 || { bashio::log.warning "Backup already running. Trigger ignored."; return 0; }
+
+        bashio::log.info "Backup running ..."
+        get_sensor
+        update_sensor "${BORG_STATUS[1]}"
+
+        # run backup
+        hc_start && \
+        init_borg && \
+        create_backup && \
+        borg_create && \
+        clean_old_snapshots && \
+        hc_finish && \
+        update_sensor "${BORG_STATUS[2]}" "ALL" \
+            || update_sensor "${BORG_STATUS[3]}" "ALL"
+
+        sleep 10
+        update_sensor "${BORG_STATUS[0]}"
+
+        bashio::log.info "Backup finished"
+
+    } 200>/tmp/borg_backup.lockfile
+
+}
+
+
+get_config
+get_sensor
+update_sensor "${BORG_STATUS[0]}"
+if !init_borg; then
+    bashio::log.fatal "Borg backup initialization failed. See logs."
+    bashio::exit.nok
+fi
+
+bashio::log.info "Borg Backup started successfully"
+
+# check the time in the background
+if [[ "$TRIGGER_TIME" != "manual" ]]; then
+    {
+        bashio::log.debug "Starting main loop ..."
+        while true; do
+            current_date=$(date +'%a %H:%M')
+            [[ "$TRIGGER_DAYS" =~ ${current_date:0:3} && "$current_date" =~ $TRIGGER_TIME ]] && run_backup
+
+            sleep 60
+        done
+    } &
+fi
+
+# start the stdin listener in foreground
+bashio::log.debug "Starting stdin listener ..."
+while true; do
+    read -r input
+    bashio::log.debug "Input received: ${input}"
+    input=$(echo "$input" | jq -r .)
+
+    if [ "$input" = "restore_sensor" ]; then
+
+        restore_sensor
+
+    elif [ "$input" = "reset_counter" ]; then
+
+        reset_counter
+        bashio::log.info "Counter variables reset successfully"
+
+    elif [ "$input" = "trigger" ]; then
+
+        run_backup
+
+    else
+        bashio::log.warning "Received unknown input: ${input}"
+    fi
+done

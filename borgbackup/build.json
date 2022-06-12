@@ -1,8 +1,8 @@
 {
   "args": {
-    "CLI_VERSION": "4.0.1"
+    "CLI_VERSION": "4.13.0"
   },
   "build_from": {
-    "amd64": "docker.io/homeassistant/amd64-base:latest"
+    "amd64": "ghcr.io/hassio-addons/base/amd64:12.0.0"
   }
 }
